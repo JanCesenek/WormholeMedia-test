@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id                                   Int           @id @unique @default(autoincrement())
+  firstName                            String        @db.VarChar
+  lastName                             String        @db.VarChar
+  username                             String        @db.VarChar
+  password                             String        @db.VarChar
+  age                                  Int
+  gender                               users_gender? @default(M)
+  race                                 String        @db.VarChar
+  birthDate                            DateTime      @db.Date
+  occupation                           String        @db.VarChar
+  profilePicture                       String?       @db.VarChar
+  origin                               String        @db.VarChar
+  admin                                Boolean?      @default(false)
+  comments                             comments[]
+  dislikes                             dislikes[]
+  likes                                likes[]
+  messages_messages_recipientIDTousers messages[]    @relation("messages_recipientIDTousers")
+  messages_messages_senderIDTousers    messages[]    @relation("messages_senderIDTousers")
+  posts                                posts[]
+}
+
+model posts {
+  id        Int        @id @unique @default(autoincrement())
+  userID    Int
+  message   String     @db.VarChar
+  image     String?    @db.VarChar
+  createdAt DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime   @default(now()) @db.Timestamptz(6)
+  comments  comments[]
+  dislikes  dislikes[]
+  likes     likes[]
+  users     users      @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model comments {
+  id        Int       @id @unique @default(autoincrement())
+  postID    Int
+  userID    Int
+  image     String?   @db.VarChar
+  message   String?   @db.VarChar
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+  posts     posts     @relation(fields: [postID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users     users     @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model dislikes {
+  id     Int   @id @unique @default(autoincrement())
+  postID Int
+  userID Int
+  posts  posts @relation(fields: [postID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users  users @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model likes {
+  id     Int   @id @unique @default(autoincrement())
+  postID Int
+  userID Int
+  posts  posts @relation(fields: [postID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users  users @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model messages {
+  id                                Int      @id @unique @default(autoincrement())
+  senderID                          Int
+  recipientID                       Int
+  message                           String?  @db.VarChar
+  image                             String?  @db.VarChar
+  createdAt                         DateTime @default(now()) @db.Timestamptz(6)
+  users_messages_recipientIDTousers users    @relation("messages_recipientIDTousers", fields: [recipientID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_messages_senderIDTousers    users    @relation("messages_senderIDTousers", fields: [senderID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum users_gender {
+  M
+  F
+}
